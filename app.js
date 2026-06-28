@@ -6,22 +6,26 @@
   "use strict";
 
   // ----- Scripted conversation. {name} is replaced with the chosen name. -----
-  const SCRIPT = [
+  // The authoritative copy lives in data/script.json (shared with the audio
+  // generator). This inline copy is a fallback if that fetch ever fails offline.
+  const SCRIPT_FALLBACK = [
     { es: "¡Hola {name}! Soy Ratón Pérez. ¿Me oyes bien?",
-      en: "Hi {name}! It's Ratón Pérez. Can you hear me?" },
+      en: "Hi {name}! It's Ratón Pérez. Can you hear me?", hasName: true },
     { es: "¡Me han dicho que se te ha caído un diente! ¡Qué noticia tan maravillosa!",
-      en: "I heard you lost a tooth! What wonderful news!" },
+      en: "I heard you lost a tooth! What wonderful news!", hasName: false },
     { es: "Estoy dando saltitos de alegría con mi colita. ¡Estoy muy feliz por ti!",
-      en: "I'm hopping with joy and wagging my little tail. I'm so happy for you!" },
+      en: "I'm hopping with joy and wagging my little tail. I'm so happy for you!", hasName: false },
     { es: "Cuando te duermas esta noche, pasaré por tu almohada a buscar tu dientecito.",
-      en: "Tonight while you sleep, I'll visit your pillow to collect your little tooth." },
+      en: "Tonight while you sleep, I'll visit your pillow to collect your little tooth.", hasName: false },
     { es: "Lo guardaré en mi castillo de dientes, donde todos brillan como estrellitas.",
-      en: "I'll keep it in my castle of teeth, where they all shine like little stars." },
+      en: "I'll keep it in my castle of teeth, where they all shine like little stars.", hasName: false },
     { es: "Sigue cepillándote, {name}, para que tus dientes estén fuertes y bonitos.",
-      en: "Keep brushing, {name}, so your teeth stay strong and beautiful." },
+      en: "Keep brushing, {name}, so your teeth stay strong and beautiful.", hasName: true },
     { es: "Tengo que seguir mi ronda. ¡Dulces sueños, {name}! ¡Hasta muy pronto!",
-      en: "I must continue my rounds. Sweet dreams, {name}! See you very soon!" }
+      en: "I must continue my rounds. Sweet dreams, {name}! See you very soon!", hasName: true }
   ];
+  // Mutable so loadData() can swap in data/script.json once fetched.
+  let SCRIPT = SCRIPT_FALLBACK;
 
   // ----- Elements -----
   const screens = {
@@ -41,6 +45,9 @@
   let timerId = null;
   let ringTimers = [];
   let spanishVoice = null;
+  let clipManifest = null;   // { clips: { "0|sam": "audio/...", "1": "audio/..." } }
+  let currentAudio = null;   // the HTMLAudioElement currently playing a clip
+  let warmAudio = null;      // single element unlocked by the Answer gesture (iOS)
 
   // ----- Speech synthesis -----
   const synth = window.speechSynthesis || null;
@@ -80,7 +87,85 @@
 
   function stopSpeech() {
     if (synth) { try { synth.cancel(); } catch (e) {} }
+    if (currentAudio) {
+      try { currentAudio.onended = currentAudio.onerror = null; currentAudio.pause(); } catch (e) {}
+      currentAudio = null;
+    }
     liveAvatar.classList.remove("is-speaking");
+  }
+
+  // ----- Pre-generated audio clips (ElevenLabs) -----
+  // Authoritative script + clip manifest live as static JSON so the app is fully
+  // offline once the service worker has cached them. Falls back silently to the
+  // inline SCRIPT and the Web Speech engine if either fetch fails.
+  async function loadData() {
+    try {
+      const r = await fetch("data/script.json", { cache: "no-cache" });
+      if (r.ok) {
+        const data = await r.json();
+        if (data && Array.isArray(data.lines) && data.lines.length) SCRIPT = data.lines;
+      }
+    } catch (e) { /* keep SCRIPT_FALLBACK */ }
+    try {
+      const r = await fetch("audio/manifest.json", { cache: "no-cache" });
+      if (r.ok) clipManifest = await r.json();
+    } catch (e) { /* no clips -> Web Speech fallback */ }
+  }
+
+  // Key must match clipKey() in tools/generate-audio.mjs.
+  function clipKey(i, name) {
+    const line = SCRIPT[i];
+    if (line && line.hasName) return i + "|" + String(name).toLowerCase().replace(/[^a-z0-9]/g, "");
+    return String(i);
+  }
+
+  // The single forward-compat seam: today a static path from the manifest;
+  // later this can return a serverless endpoint URL with no other client change.
+  function resolveClipSrc(i, name) {
+    if (!clipManifest || !clipManifest.clips) return null;
+    return clipManifest.clips[clipKey(i, name)] || null;
+  }
+
+  // Play a pre-generated clip, mirroring speak()'s contract (avatar animation +
+  // single onDone). Falls back to Web Speech if there's no clip or playback fails.
+  function playClip(i, name, onDone) {
+    const src = resolveClipSrc(i, name);
+    if (!src) { speak(fill(SCRIPT[i].es), onDone); return; }
+
+    stopSpeech(); // cancel any pending synth/audio first
+
+    const a = warmAudio || (warmAudio = new Audio());
+    currentAudio = a;
+    let settled = false;
+    const finish = () => {
+      if (settled) return;
+      settled = true;
+      a.onended = a.onerror = a.onplaying = null;
+      liveAvatar.classList.remove("is-speaking");
+      if (currentAudio === a) currentAudio = null;
+      if (onDone) onDone();
+    };
+    const fallback = () => {
+      if (settled) return;
+      settled = true;
+      a.onended = a.onerror = a.onplaying = null;
+      liveAvatar.classList.remove("is-speaking");
+      if (currentAudio === a) currentAudio = null;
+      speak(fill(SCRIPT[i].es), onDone); // keep the contract via the TTS path
+    };
+
+    a.onplaying = () => liveAvatar.classList.add("is-speaking");
+    a.onended = finish;
+    a.onerror = fallback;
+    try {
+      a.muted = false;
+      a.src = src;
+      a.currentTime = 0;
+      const p = a.play();
+      if (p && p.catch) p.catch(fallback); // autoplay/gesture block or decode fail
+    } catch (e) {
+      fallback();
+    }
   }
 
   // ----- Ringtone & haptics (best-effort, never required) -----
@@ -160,7 +245,7 @@
     continueBtn.hidden = true;
     const line = SCRIPT[i];
     setCaption(fill(line.en));
-    speak(fill(line.es), () => {
+    playClip(i, chosenName, () => {
       if (i < SCRIPT.length - 1) {
         continueBtn.hidden = false;
       } else {
@@ -197,6 +282,13 @@
     if (audioCtx && audioCtx.state === "suspended") audioCtx.resume();
     // Warm up the speech engine with a silent utterance so the first real line speaks.
     if (synth) { try { synth.speak(new SpeechSynthesisUtterance("")); } catch (e) {} }
+    // Unlock an HTMLAudioElement during this gesture so the first clip plays on iOS.
+    try {
+      if (!warmAudio) warmAudio = new Audio();
+      warmAudio.muted = true;
+      const p = warmAudio.play();
+      if (p && p.then) p.then(() => warmAudio.pause()).catch(() => {});
+    } catch (e) {}
 
     lineIndex = 0;
     goodbyeEl.hidden = true;
@@ -223,6 +315,9 @@
   document.getElementById("btn-decline").addEventListener("click", hangUp);
   document.getElementById("btn-end").addEventListener("click", hangUp);
   continueBtn.addEventListener("click", nextLine);
+
+  // Load the script + clip manifest up front (well before the user can answer).
+  loadData();
 
   // Pause speech if the app is backgrounded.
   document.addEventListener("visibilitychange", () => {

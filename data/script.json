@@ -1,0 +1,45 @@
+{
+  "version": 1,
+  "lang": "es-ES",
+  "voice": "es-ES-ElviraNeural",
+  "pitch": "+18Hz",
+  "rate": "-4%",
+  "names": ["Sam", "Daniel", "Ben"],
+  "lines": [
+    {
+      "es": "¡Hola {name}! Soy Ratón Pérez. ¿Me oyes bien?",
+      "en": "Hi {name}! It's Ratón Pérez. Can you hear me?",
+      "hasName": true
+    },
+    {
+      "es": "¡Me han dicho que se te ha caído un diente! ¡Qué noticia tan maravillosa!",
+      "en": "I heard you lost a tooth! What wonderful news!",
+      "hasName": false
+    },
+    {
+      "es": "Estoy dando saltitos de alegría con mi colita. ¡Estoy muy feliz por ti!",
+      "en": "I'm hopping with joy and wagging my little tail. I'm so happy for you!",
+      "hasName": false
+    },
+    {
+      "es": "Cuando te duermas esta noche, pasaré por tu almohada a buscar tu dientecito.",
+      "en": "Tonight while you sleep, I'll visit your pillow to collect your little tooth.",
+      "hasName": false
+    },
+    {
+      "es": "Lo guardaré en mi castillo de dientes, donde todos brillan como estrellitas.",
+      "en": "I'll keep it in my castle of teeth, where they all shine like little stars.",
+      "hasName": false
+    },
+    {
+      "es": "Sigue cepillándote, {name}, para que tus dientes estén fuertes y bonitos.",
+      "en": "Keep brushing, {name}, so your teeth stay strong and beautiful.",
+      "hasName": true
+    },
+    {
+      "es": "Tengo que seguir mi ronda. ¡Dulces sueños, {name}! ¡Hasta muy pronto!",
+      "en": "I must continue my rounds. Sweet dreams, {name}! See you very soon!",
+      "hasName": true
+    }
+  ]
+}
