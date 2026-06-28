@@ -1,7 +1,9 @@
 {
   "version": 1,
   "lang": "es-ES",
-  "voiceId": "REPLACE_WITH_ELEVENLABS_VOICE_ID",
+  "voice": "es-ES-ElviraNeural",
+  "pitch": "+18Hz",
+  "rate": "-4%",
   "names": ["Sam", "Daniel", "Ben"],
   "lines": [
     {

@@ -1,59 +1,70 @@
 # Voice generation tools
 
-These scripts pre-generate Ratón Pérez's voice clips with [ElevenLabs](https://elevenlabs.io)
-so the app plays warm, natural audio instead of the device's robotic Web Speech
-voice. The generated MP3s ship with the app and play offline. They are **build-time**
-tools — they are never loaded by the browser.
+These scripts pre-generate Ratón Pérez's voice clips so the app plays a warm,
+natural voice instead of the device's robotic Web Speech voice. The generated
+MP3s ship with the app and play offline. This is a **build-time** tool — the
+browser never loads it.
 
-## One-time setup
+We use [edge-tts](https://github.com/rany2/edge-tts): Microsoft Edge's neural
+voices, **free and with no API key**. It's only needed when you (re)generate the
+clips; the shipped app needs no network.
 
-1. Pick a voice in the ElevenLabs Voice Library. Audition warm, soft, young-sounding
-   voices that read Spanish well under the `eleven_multilingual_v2` model — that
-   timbre is what makes Ratón Pérez sound *gently* mouse-like without being squeaky.
-   Copy its **Voice ID**.
-2. Put the Voice ID in `data/script.json` (`"voiceId"`), or pass `--voice <id>` each run.
-3. Get your ElevenLabs API key and export it (never commit it):
-
-   ```sh
-   export ELEVENLABS_API_KEY=sk_...
-   ```
-
-## Generate
-
-Requires Node 18+ (uses the global `fetch`). No npm install needed.
+## Generate the clips
 
 ```sh
-node tools/generate-audio.mjs            # generate any missing clips
-node tools/generate-audio.mjs --force    # regenerate every clip
-node tools/generate-audio.mjs --voice <id>   # override the voiceId from script.json
+pip install edge-tts                 # one-time, free, no account
+python3 tools/generate_audio.py      # writes audio/*.mp3 + audio/manifest.json
 ```
 
-This writes `audio/line-*.mp3` (13 clips: 4 name-free lines + 3 name-bearing
-lines × 3 names) and `audio/manifest.json`, which maps each `(line, name)` to its
-file. Re-running skips clips that already exist unless `--force` is passed, so you
-don't re-spend credits.
+Options:
 
-## After regenerating
+```sh
+python3 tools/generate_audio.py --force                  # regenerate everything
+python3 tools/generate_audio.py --voice es-MX-DaliaNeural --pitch +12Hz
+```
 
-**Bump `CACHE` in `sw.js`** (e.g. `raton-perez-v2` → `v3`) whenever the audio,
-`data/script.json`, or `app.js` changes. The service worker precaches by cache
-name, so without a bump returning visitors keep the old clips.
+This produces 13 clips (4 name-free lines + 3 name-bearing lines × 3 names) and
+`audio/manifest.json`, which maps each `(line, name)` to its file. Re-running
+skips clips that already exist unless `--force` is passed.
 
-## Voice tuning
+> **Run this on a normal computer.** Microsoft's free endpoint blocks
+> datacenter/cloud IPs, so generation typically fails with a `403` from cloud
+> sandboxes/CI. From a home machine it just works.
 
-Settings live in one place: `tools/elevenlabs.mjs` (`DEFAULT_VOICE_SETTINGS`).
-Current values — `stability 0.5`, `similarity_boost 0.8`, `style 0.0`,
-`use_speaker_boost true` — favor a warm, steady, natural read.
+## After generating
 
-We intentionally do **not** pitch-shift the audio: a global pitch-up reintroduces
-the chipmunk/robotic artifact we're trying to escape. The "mouse" quality should
-come from voice choice. If you ever want a subtle lift, do it with a
-formant-preserving tool (`rubberband`), keep it tiny (≤ +1 semitone), and never use
-`asetrate`.
+1. Commit the new `audio/*.mp3` and `audio/manifest.json`.
+2. **Bump `CACHE` in `sw.js`** (e.g. `raton-perez-v2` → `v3`). The service worker
+   precaches by cache name, so without a bump returning visitors keep old clips.
+
+The app degrades gracefully in the meantime: if a clip is missing it falls back
+to the browser's Web Speech voice, so nothing breaks before you generate.
+
+## Voice & "mouse" tuning
+
+All knobs live in one place, `data/script.json`:
+
+| Field   | Default              | Notes |
+|---------|----------------------|-------|
+| `voice` | `es-ES-ElviraNeural` | Warm female Spain-Spanish neural voice. |
+| `pitch` | `+18Hz`              | Modest lift → gentle, slightly mouse-like but still natural. Raise toward `+30Hz` for squeakier, lower toward `+0Hz` for plain. |
+| `rate`  | `-4%`               | Slightly slower for clarity for young listeners. |
+
+List every available voice with `edge-tts --list-voices`. Some good Spanish
+alternatives:
+
+- `es-ES-ElviraNeural` — female, Spain (default)
+- `es-ES-AlvaroNeural` — male, Spain
+- `es-MX-DaliaNeural` — female, Mexico
+- `es-MX-JorgeNeural` — male, Mexico
+
+Pitch is applied by edge-tts itself (no ffmpeg needed), so the timbre stays
+natural rather than chipmunk-like.
 
 ## Forward-compatibility
 
-`tools/elevenlabs.mjs` (`buildTtsRequest`) is deliberately framework-free so a
-future serverless TTS proxy — for custom names, editable scripts, or other
-languages — can import it and produce byte-identical audio. On the client, the
-single swap point is `resolveClipSrc()` in `app.js`.
+The single client swap point is `resolveClipSrc()` in `app.js`. A future feature
+(custom names, editable scripts, other languages) can add a small backend that
+runs edge-tts on demand — still free — and returns a URL; only `resolveClipSrc()`
+changes, while `playClip()`, the avatar animation, and the service worker stay
+as-is.
