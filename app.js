@@ -150,8 +150,10 @@
   function fill(text) { return text.replace(/\{name\}/g, chosenName); }
 
   function setCaption(text) {
-    captionEl.style.opacity = "0";
-    setTimeout(() => { captionEl.textContent = text; captionEl.style.opacity = "1"; }, 180);
+    captionEl.textContent = text;          // atomic swap — old text gone immediately
+    captionEl.style.animation = "none";    // restart the fade-in for each new line
+    void captionEl.offsetHeight;           // force reflow so the layer repaints clean
+    captionEl.style.animation = "";
   }
 
   function playLine(i) {
