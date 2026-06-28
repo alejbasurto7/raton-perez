@@ -1,8 +1,8 @@
 {
   "version": 1,
   "lang": "es-ES",
-  "voice": "es-ES-ElviraNeural",
-  "pitch": "+18Hz",
+  "voice": "es-PE-AlexNeural",
+  "pitch": "+40Hz",
   "rate": "-4%",
   "names": ["Sam", "Daniel", "Ben"],
   "lines": [
