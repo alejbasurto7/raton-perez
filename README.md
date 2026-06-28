@@ -11,8 +11,9 @@ tooth fairy) after losing a tooth.
    (cute mouse photo, ringtone, vibration). Decline or **Answer**.
 3. **On the call** — Ratón Pérez talks to the child by name in a warm, scripted
    conversation about the lost tooth. He **speaks in Spanish** (using the device's
-   built-in voice) while **English captions** appear on screen. Tap **"Tap to continue"**
-   to move through the chat.
+   built-in voice) while **English captions** appear on screen. **Tap anywhere on the
+   screen** to move through the chat — a discreet tap lets the parent keep the
+   conversation going without the child noticing.
 4. **End call** — a red button is always available to hang up and return to the names.
 
 Everything is gentle and positive — no scary sounds or visuals, no microphone, no

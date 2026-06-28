@@ -34,7 +34,6 @@
     call: document.getElementById("screen-call")
   };
   const captionEl = document.getElementById("caption");
-  const continueBtn = document.getElementById("btn-continue");
   const timerEl = document.getElementById("call-timer");
   const goodbyeEl = document.getElementById("goodbye");
   const liveAvatar = document.getElementById("call-avatar-live");
@@ -42,6 +41,7 @@
   // ----- State -----
   let chosenName = "";
   let lineIndex = 0;
+  let awaitingTap = false;   // true while a line has finished and a tap advances
   let timerId = null;
   let ringTimers = [];
   let spanishVoice = null;
@@ -242,12 +242,13 @@
   }
 
   function playLine(i) {
-    continueBtn.hidden = true;
+    awaitingTap = false;
     const line = SCRIPT[i];
     setCaption(fill(line.en));
     playClip(i, chosenName, () => {
       if (i < SCRIPT.length - 1) {
-        continueBtn.hidden = false;
+        // Line finished: the next tap anywhere on the call screen advances.
+        awaitingTap = true;
       } else {
         endConversation();
       }
@@ -255,14 +256,16 @@
   }
 
   function nextLine() {
+    if (!awaitingTap) return;        // ignore taps while a line is still playing
     if (lineIndex < SCRIPT.length - 1) {
+      awaitingTap = false;
       lineIndex++;
       playLine(lineIndex);
     }
   }
 
   function endConversation() {
-    continueBtn.hidden = true;
+    awaitingTap = false;
     goodbyeEl.hidden = false;
     // Auto-hang up shortly after the goodbye card appears.
     setTimeout(() => { if (!goodbyeEl.hidden) hangUp(); }, 3500);
@@ -304,6 +307,7 @@
     goodbyeEl.hidden = true;
     chosenName = "";
     lineIndex = 0;
+    awaitingTap = false;
     show("picker");
   }
 
@@ -314,7 +318,14 @@
   document.getElementById("btn-answer").addEventListener("click", answer);
   document.getElementById("btn-decline").addEventListener("click", hangUp);
   document.getElementById("btn-end").addEventListener("click", hangUp);
-  continueBtn.addEventListener("click", nextLine);
+
+  // A tap anywhere on the call screen advances the conversation, so the parent
+  // can keep it moving discreetly. Taps on the call controls (End call) are
+  // left alone so they still work as expected.
+  screens.call.addEventListener("click", (e) => {
+    if (e.target.closest(".oncall-actions")) return;
+    nextLine();
+  });
 
   // Load the script + clip manifest up front (well before the user can answer).
   loadData();
