@@ -1,8 +1,9 @@
 name: Deploy to GitHub Pages
 
 on:
+  # Publish the live site whenever main updates (e.g. after a PR merges).
   push:
-    branches: ["claude/tooth-fairy-pwa-ios-bpddjs", "main"]
+    branches: ["main"]
   workflow_dispatch:
 
 permissions:
