@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <title>Ratón Pérez</title>
+  <meta name="description" content="A magical call from Ratón Pérez for a child who lost a tooth." />
+
+  <!-- PWA -->
+  <link rel="manifest" href="manifest.webmanifest" />
+  <meta name="theme-color" content="#2b2150" />
+
+  <!-- iOS standalone -->
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Ratón Pérez" />
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
+  <link rel="icon" href="icons/icon-192.png" />
+
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <!-- ===== Screen 1: Name picker ===== -->
+  <section id="screen-picker" class="screen is-active">
+    <div class="picker">
+      <img class="picker__avatar" src="assets/raton-perez.png" alt="Ratón Pérez, a friendly cartoon mouse" />
+      <h1 class="picker__title">¡Hola! Who is calling Ratón Pérez?</h1>
+      <p class="picker__subtitle">Tap your name</p>
+      <div class="picker__names">
+        <button class="name-btn" data-name="Sam" type="button">Sam</button>
+        <button class="name-btn" data-name="Daniel" type="button">Daniel</button>
+        <button class="name-btn" data-name="Ben" type="button">Ben</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Screen 2: Incoming call ===== -->
+  <section id="screen-incoming" class="screen call-bg">
+    <div class="call-top">
+      <p class="call-status">Ratón Pérez is calling…</p>
+      <h2 class="call-name">Ratón Pérez</h2>
+      <p class="call-sub">mobile · tooth fairy</p>
+    </div>
+
+    <div class="call-avatar-wrap">
+      <img class="call-avatar ring" src="assets/raton-perez.png" alt="Ratón Pérez calling" />
+    </div>
+
+    <div class="incoming-actions">
+      <div class="action">
+        <button id="btn-decline" class="circle-btn circle-btn--decline" type="button" aria-label="Decline call">
+          <svg viewBox="0 0 24 24" width="32" height="32" aria-hidden="true"><path fill="currentColor" d="M12 9c-1.6 0-3.15.25-4.6.72v3.1c0 .39-.23.74-.56.9-.98.49-1.87 1.12-2.66 1.85-.18.18-.43.28-.7.28-.28 0-.53-.11-.71-.29L.29 13.08a.996.996 0 0 1 0-1.41C3.34 8.78 7.46 7 12 7s8.66 1.78 11.71 4.67c.18.18.29.43.29.71 0 .28-.11.53-.29.71l-2.48 2.48c-.18.18-.43.29-.71.29-.27 0-.52-.11-.7-.28a11.27 11.27 0 0 0-2.66-1.85.998.998 0 0 1-.56-.9v-3.1A14.78 14.78 0 0 0 12 9Z"/></svg>
+        </button>
+        <span class="action__label">Decline</span>
+      </div>
+      <div class="action">
+        <button id="btn-answer" class="circle-btn circle-btn--answer" type="button" aria-label="Answer call">
+          <svg viewBox="0 0 24 24" width="32" height="32" aria-hidden="true"><path fill="currentColor" d="M6.62 10.79a15.05 15.05 0 0 0 6.59 6.59l2.2-2.2a1 1 0 0 1 1.02-.24c1.12.37 2.33.57 3.57.57a1 1 0 0 1 1 1V20a1 1 0 0 1-1 1C10.07 21 3 13.93 3 5a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.25.2 2.45.57 3.57a1 1 0 0 1-.25 1.02l-2.2 2.2Z"/></svg>
+        </button>
+        <span class="action__label">Answer</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Screen 3: On call ===== -->
+  <section id="screen-call" class="screen call-bg">
+    <div class="call-top">
+      <h2 class="call-name">Ratón Pérez</h2>
+      <p id="call-timer" class="call-timer">00:00</p>
+    </div>
+
+    <div class="call-avatar-wrap">
+      <img id="call-avatar-live" class="call-avatar talking" src="assets/raton-perez.png" alt="Ratón Pérez on the call" />
+    </div>
+
+    <div class="caption-area">
+      <p id="caption" class="caption">…</p>
+      <button id="btn-continue" class="continue-btn" type="button" hidden>Tap to continue ›</button>
+    </div>
+
+    <!-- Goodbye card (shown after the last line) -->
+    <div id="goodbye" class="goodbye" hidden>
+      <img class="goodbye__img" src="assets/raton-perez.png" alt="Ratón Pérez waving goodbye" />
+      <p class="goodbye__text">Ratón Pérez se despidió 💛</p>
+    </div>
+
+    <div class="oncall-actions">
+      <button id="btn-end" class="circle-btn circle-btn--decline" type="button" aria-label="End call">
+        <svg viewBox="0 0 24 24" width="32" height="32" aria-hidden="true"><path fill="currentColor" d="M12 9c-1.6 0-3.15.25-4.6.72v3.1c0 .39-.23.74-.56.9-.98.49-1.87 1.12-2.66 1.85-.18.18-.43.28-.7.28-.28 0-.53-.11-.71-.29L.29 13.08a.996.996 0 0 1 0-1.41C3.34 8.78 7.46 7 12 7s8.66 1.78 11.71 4.67c.18.18.29.43.29.71 0 .28-.11.53-.29.71l-2.48 2.48c-.18.18-.43.29-.71.29-.27 0-.52-.11-.7-.28a11.27 11.27 0 0 0-2.66-1.85.998.998 0 0 1-.56-.9v-3.1A14.78 14.78 0 0 0 12 9Z"/></svg>
+      </button>
+      <span class="action__label">End call</span>
+    </div>
+  </section>
+
+  <script src="app.js"></script>
+</body>
+</html>

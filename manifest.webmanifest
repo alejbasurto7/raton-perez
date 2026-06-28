@@ -1,0 +1,16 @@
+{
+  "name": "Ratón Pérez",
+  "short_name": "Ratón Pérez",
+  "description": "A magical call from Ratón Pérez for a child who lost a tooth.",
+  "start_url": ".",
+  "scope": ".",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#241b46",
+  "theme_color": "#2b2150",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

@@ -1,0 +1,260 @@
+:root {
+  --bg-deep: #2b2150;
+  --bg-soft: #3a2d6b;
+  --accent: #ffd166;
+  --green: #34c759;
+  --red: #ff3b30;
+  --text: #ffffff;
+  --text-dim: rgba(255, 255, 255, 0.72);
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+/* The hidden attribute must always win over component display rules. */
+[hidden] { display: none !important; }
+
+html, body {
+  margin: 0;
+  height: 100%;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  color: var(--text);
+  background: var(--bg-deep);
+  overscroll-behavior: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+body { overflow: hidden; }
+
+/* ===== Screen base ===== */
+.screen {
+  position: fixed;
+  inset: 0;
+  display: none;
+  flex-direction: column;
+  padding: calc(var(--safe-top) + 16px) 20px calc(var(--safe-bottom) + 28px);
+}
+.screen.is-active { display: flex; }
+
+.call-bg {
+  background:
+    radial-gradient(circle at 50% 18%, rgba(255, 209, 102, 0.18), transparent 55%),
+    linear-gradient(180deg, #3a2d6b 0%, #241b46 100%);
+}
+
+/* ===== Screen 1: Name picker ===== */
+#screen-picker {
+  background:
+    radial-gradient(circle at 50% 0%, rgba(255, 209, 102, 0.22), transparent 60%),
+    linear-gradient(180deg, #4a3a86 0%, #2b2150 100%);
+}
+.picker {
+  margin: auto;
+  width: 100%;
+  max-width: 420px;
+  text-align: center;
+}
+.picker__avatar {
+  width: 168px;
+  height: 168px;
+  border-radius: 50%;
+  object-fit: cover;
+  object-position: 42% 32%;
+  border: 5px solid rgba(255, 255, 255, 0.9);
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.35);
+  animation: float 4s ease-in-out infinite;
+}
+.picker__title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1.3;
+  margin: 22px 0 6px;
+}
+.picker__subtitle {
+  color: var(--text-dim);
+  margin: 0 0 26px;
+  font-size: 1.05rem;
+}
+.picker__names {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.name-btn {
+  appearance: none;
+  border: none;
+  border-radius: 20px;
+  padding: 20px;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #2b2150;
+  background: linear-gradient(180deg, #ffe39a, #ffd166);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+  cursor: pointer;
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+.name-btn:active {
+  transform: scale(0.97);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+}
+
+/* ===== Call screens shared ===== */
+.call-top {
+  text-align: center;
+  margin-top: 8vh;
+}
+.call-status {
+  color: var(--text-dim);
+  font-size: 1.05rem;
+  margin: 0 0 10px;
+  animation: pulse 1.6s ease-in-out infinite;
+}
+.call-name {
+  font-size: 2.4rem;
+  font-weight: 700;
+  margin: 0;
+  letter-spacing: 0.5px;
+}
+.call-sub { color: var(--text-dim); margin: 6px 0 0; }
+.call-timer { color: var(--accent); font-size: 1.15rem; margin: 8px 0 0; font-variant-numeric: tabular-nums; }
+
+.call-avatar-wrap {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.call-avatar {
+  width: 220px;
+  height: 220px;
+  border-radius: 50%;
+  object-fit: cover;
+  object-position: 42% 30%;
+  border: 6px solid rgba(255, 255, 255, 0.9);
+  box-shadow: 0 16px 50px rgba(0, 0, 0, 0.45);
+}
+.call-avatar.ring { animation: ring 1.2s ease-in-out infinite; }
+.call-avatar.talking { animation: float 3s ease-in-out infinite; }
+.call-avatar.is-speaking { animation: talkbob 0.5s ease-in-out infinite; }
+
+/* ===== Incoming actions ===== */
+.incoming-actions {
+  display: flex;
+  justify-content: space-around;
+  align-items: flex-end;
+  padding: 0 18px;
+}
+.action { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.action__label { font-size: 0.95rem; color: var(--text-dim); }
+
+.circle-btn {
+  width: 76px;
+  height: 76px;
+  border-radius: 50%;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  cursor: pointer;
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.4);
+  transition: transform 0.12s ease;
+}
+.circle-btn:active { transform: scale(0.92); }
+.circle-btn--answer { background: var(--green); animation: jiggle 1.4s ease-in-out infinite; }
+.circle-btn--decline { background: var(--red); }
+.circle-btn--decline svg { transform: rotate(135deg); }
+
+/* ===== On-call caption ===== */
+.caption-area {
+  min-height: 132px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 0 6px;
+}
+.caption {
+  font-size: 1.35rem;
+  line-height: 1.4;
+  text-align: center;
+  max-width: 460px;
+  margin: 0;
+  transition: opacity 0.25s ease;
+}
+.continue-btn {
+  appearance: none;
+  border: 1.5px solid rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  border-radius: 999px;
+  padding: 12px 24px;
+  font-size: 1.05rem;
+  font-weight: 600;
+  cursor: pointer;
+  animation: pulse 1.8s ease-in-out infinite;
+}
+.continue-btn:active { transform: scale(0.96); }
+
+.oncall-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+/* ===== Goodbye card ===== */
+.goodbye {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  background: linear-gradient(180deg, #3a2d6b 0%, #241b46 100%);
+  padding: 24px;
+  text-align: center;
+}
+.goodbye__img {
+  width: 200px;
+  height: 200px;
+  border-radius: 28px;
+  object-fit: cover;
+  box-shadow: 0 16px 50px rgba(0, 0, 0, 0.45);
+  animation: float 3s ease-in-out infinite;
+}
+.goodbye__text { font-size: 1.5rem; font-weight: 700; margin: 0; }
+
+/* ===== Animations ===== */
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+@keyframes ring {
+  0%, 100% { transform: rotate(0) scale(1); }
+  20% { transform: rotate(-6deg) scale(1.03); }
+  40% { transform: rotate(6deg) scale(1.03); }
+  60% { transform: rotate(-4deg) scale(1.02); }
+  80% { transform: rotate(4deg) scale(1.02); }
+}
+@keyframes talkbob {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-4px) scale(1.015); }
+}
+@keyframes jiggle {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.55; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; }
+}
