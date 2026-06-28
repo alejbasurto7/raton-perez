@@ -1,0 +1,21 @@
+{
+  "version": 1,
+  "scriptVersion": 1,
+  "voice": "es-ES-ElviraNeural",
+  "format": "mp3",
+  "clips": {
+    "0|sam": "audio/line-00--sam.mp3",
+    "0|daniel": "audio/line-00--daniel.mp3",
+    "0|ben": "audio/line-00--ben.mp3",
+    "1": "audio/line-01.mp3",
+    "2": "audio/line-02.mp3",
+    "3": "audio/line-03.mp3",
+    "4": "audio/line-04.mp3",
+    "5|sam": "audio/line-05--sam.mp3",
+    "5|daniel": "audio/line-05--daniel.mp3",
+    "5|ben": "audio/line-05--ben.mp3",
+    "6|sam": "audio/line-06--sam.mp3",
+    "6|daniel": "audio/line-06--daniel.mp3",
+    "6|ben": "audio/line-06--ben.mp3"
+  }
+}
